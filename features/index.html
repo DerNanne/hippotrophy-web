@@ -96,6 +96,26 @@
   }
   .meta strong { color: var(--ink); font-weight: 600; }
 
+  /* Appearance switch. "Auto" leaves data-theme unset, so the device decides;
+     the choice is not stored and every visit starts on Auto. */
+  .mast-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; }
+  .theme {
+    display: inline-flex; margin: 0; padding: 2px; min-inline-size: 0;
+    border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+  }
+  .theme label {
+    position: relative; padding: .3rem .75rem; border-radius: 999px; cursor: pointer;
+    font-size: var(--step--1); line-height: 1.2; color: var(--ink-soft);
+  }
+  .theme input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+  .theme label:hover { color: var(--ink); }
+  .theme label:has(input:checked) { background: var(--accent-wash); color: var(--accent); font-weight: 600; }
+  .theme label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sr {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
   /* ---- Sticky toolbar ---- */
   .toolbar {
     position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
@@ -239,7 +259,15 @@
 </style>
 
 <header class="masthead wrap">
-  <span class="eyebrow">Feature-Übersicht</span>
+  <div class="mast-top">
+    <span class="eyebrow">Feature-Übersicht</span>
+    <fieldset class="theme" id="theme">
+      <legend class="sr">Darstellung</legend>
+      <label title="Wie auf dem Gerät eingestellt"><input type="radio" name="theme" id="theme-auto" value="auto" autocomplete="off" checked>Auto</label>
+      <label><input type="radio" name="theme" id="theme-light" value="light" autocomplete="off">Hell</label>
+      <label><input type="radio" name="theme" id="theme-dark" value="dark" autocomplete="off">Dunkel</label>
+    </fieldset>
+  </div>
   <h1>HippoTrophy</h1>
   <p class="lede">Ein Trainingstagebuch für Hypertrophie- und Krafttraining. Alles bleibt auf dem Gerät: kein Konto, keine Anmeldung, kein Netzzugriff. Hier steht jede Funktion der App mit Bildern, wie sie aussieht und wie man sie benutzt.</p>
   <ul class="meta">
@@ -578,6 +606,18 @@
   const features = [...document.querySelectorAll('.feature')];
   const groups = [...document.querySelectorAll('.group')];
   const toggle = document.getElementById('toggle-all');
+
+  // Appearance: Auto follows the device, Hell and Dunkel override it for this
+  // visit only. Nothing is stored, so a reload is back on Auto; the radio is
+  // reset too, because some browsers restore form state on reload.
+  const root = document.documentElement;
+  const themeAuto = document.getElementById('theme-auto');
+  themeAuto.checked = true;
+  root.removeAttribute('data-theme');
+  document.getElementById('theme').addEventListener('change', e => {
+    if (e.target.value === 'auto') root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', e.target.value);
+  });
 
   // Expand / collapse everything that is currently visible.
   const syncToggle = () => {
