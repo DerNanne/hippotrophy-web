@@ -1,0 +1,668 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>HippoTrophy Funktionen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+  /* Layout: one reading column; each feature is a row that opens into text
+     beside a strip of phone screens, the way the app itself is a list of
+     things that open. Neutrals lean toward the green of the activity grid. */
+  :root {
+    --ground:      #F4F6F3;
+    --surface:     #FFFFFF;
+    --sunk:        #E9EDE8;
+    --line:        #D8DED6;
+    --ink:         #151915;
+    --ink-soft:    #4A534B;
+    --ink-faint:   #778278;
+    --accent:      #1D7A43;
+    --accent-wash: #DFF0E5;
+    --shadow:      0 1px 2px rgba(21, 25, 21, .06), 0 10px 28px -16px rgba(21, 25, 21, .28);
+
+    --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --body:    "Barlow", "Helvetica Neue", Arial, system-ui, sans-serif;
+
+    --step--1: .875rem;
+    --step-0:  1rem;
+    --step-1:  1.25rem;
+    --step-2:  1.75rem;
+    --step-3:  2.75rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0F1310;
+      --surface:     #171C18;
+      --sunk:        #1F2620;
+      --line:        #2B342D;
+      --ink:         #E8EEE9;
+      --ink-soft:    #A8B3AA;
+      --ink-faint:   #79857B;
+      --accent:      #5ACD88;
+      --accent-wash: #17301F;
+      --shadow:      0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -16px rgba(0, 0, 0, .8);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #0F1310;
+    --surface:     #171C18;
+    --sunk:        #1F2620;
+    --line:        #2B342D;
+    --ink:         #E8EEE9;
+    --ink-soft:    #A8B3AA;
+    --ink-faint:   #79857B;
+    --accent:      #5ACD88;
+    --accent-wash: #17301F;
+    --shadow:      0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -16px rgba(0, 0, 0, .8);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: 8rem; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font: 400 var(--step-0)/1.55 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  .wrap { max-width: 60rem; margin: 0 auto; padding-inline: 1rem; }
+  @media (min-width: 40rem) { .wrap { padding-inline: 1.5rem; } }
+
+  /* ---- Masthead ---- */
+  .masthead { padding-block: 2.5rem 1.5rem; display: grid; gap: .75rem; }
+  .eyebrow {
+    font: 600 var(--step--1)/1 var(--display);
+    letter-spacing: .12em; text-transform: uppercase; color: var(--accent);
+  }
+  h1 {
+    margin: 0;
+    font: 700 var(--step-3)/1 var(--display);
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+  .lede { margin: 0; max-width: 62ch; color: var(--ink-soft); font-size: 1.0625rem; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; margin: .25rem 0 0; padding: 0; list-style: none;
+    font-size: var(--step--1); color: var(--ink-faint); font-variant-numeric: tabular-nums;
+  }
+  .meta strong { color: var(--ink); font-weight: 600; }
+
+  /* ---- Sticky toolbar ---- */
+  .toolbar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    background: color-mix(in srgb, var(--ground) 92%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .toolbar .wrap { display: grid; gap: .6rem; padding-block: .7rem; }
+  .nav { display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: none; margin-inline: -.25rem; padding-inline: .25rem; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a {
+    flex: none; display: inline-flex; align-items: baseline; gap: .4rem;
+    padding: .3rem .7rem; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--line);
+    color: var(--ink); text-decoration: none; font-weight: 500; font-size: var(--step--1); white-space: nowrap;
+  }
+  .nav a span { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+  .nav a:hover { border-color: var(--accent); }
+  .tools { display: flex; gap: .5rem; align-items: center; }
+  .search { flex: 1; min-width: 0; position: relative; }
+  .search input {
+    width: 100%; font: inherit; font-size: var(--step--1);
+    padding: .45rem .75rem .45rem 2rem; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  }
+  .search input::placeholder { color: var(--ink-faint); }
+  .search svg { position: absolute; left: .65rem; top: 50%; translate: 0 -50%; width: 14px; height: 14px; stroke: var(--ink-faint); fill: none; stroke-width: 2; }
+  .btn {
+    flex: none; font: 500 var(--step--1)/1 var(--body);
+    padding: .55rem .8rem; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ---- Groups ---- */
+  main { padding-block: 1rem 4rem; }
+  .group { padding-top: 2.25rem; }
+  .g-head { display: grid; gap: .3rem; margin-bottom: 1rem; }
+  .g-head h2 {
+    margin: 0; font: 700 var(--step-2)/1.05 var(--display);
+    text-transform: uppercase; letter-spacing: .02em; text-wrap: balance;
+  }
+  .g-head p { margin: 0; color: var(--ink-soft); max-width: 62ch; }
+
+  .features {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .feature + .feature { border-top: 1px solid var(--line); }
+
+  .feature summary {
+    list-style: none; cursor: pointer;
+    display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 1rem;
+    padding: .9rem 1.1rem;
+  }
+  .feature summary::-webkit-details-marker { display: none; }
+  .feature summary:hover { background: var(--sunk); }
+  .sum-text { display: grid; gap: .1rem; min-width: 0; }
+  .f-title { font: 600 var(--step-1)/1.2 var(--display); letter-spacing: .01em; }
+  .f-teaser { color: var(--ink-soft); font-size: .9375rem; }
+  .f-count {
+    font-size: .75rem; color: var(--ink-faint); white-space: nowrap; font-variant-numeric: tabular-nums;
+  }
+  .chev {
+    width: .55rem; height: .55rem; margin-right: .2rem;
+    border-right: 2px solid var(--ink-faint); border-bottom: 2px solid var(--ink-faint);
+    rotate: 45deg; translate: 0 -.15rem; transition: rotate .18s ease;
+  }
+  .feature[open] .chev { rotate: 225deg; translate: 0 .1rem; }
+  .feature[open] summary { background: var(--accent-wash); }
+  .feature[open] .f-title { color: var(--accent); }
+  @media (max-width: 30rem) { .f-count { display: none; } .feature summary { grid-template-columns: 1fr auto; } }
+
+  .f-body { padding: 1.1rem 1.1rem 1.4rem; display: grid; gap: 1.25rem; }
+  .f-text { max-width: 65ch; display: grid; gap: .7rem; }
+  .f-text p, .f-text ul { margin: 0; }
+  .f-text ul { padding-left: 1.2rem; display: grid; gap: .2rem; }
+  .steps { background: var(--sunk); border-radius: 10px; padding: .8rem 1rem; }
+  .steps h4 {
+    margin: 0 0 .35rem; font: 600 .8125rem/1 var(--display);
+    text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint);
+  }
+  .steps ol { margin: 0; padding-left: 1.3rem; display: grid; gap: .15rem; }
+  .steps li::marker { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* ---- Screens ---- */
+  .gallery {
+    display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x proximity;
+    padding: .25rem .1rem 1rem; margin-inline: -.1rem;
+  }
+  .shot { flex: none; width: 12.5rem; margin: 0; display: grid; gap: .55rem; align-content: start; scroll-snap-align: start; }
+  .shot.paper { width: 16rem; }
+  .zoom {
+    display: block; padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 26px;
+  }
+  .shot img {
+    width: 100%; border-radius: 26px;
+    border: 1px solid var(--line); background: var(--sunk);
+    box-shadow: var(--shadow);
+  }
+  .shot.paper .zoom, .shot.paper img { border-radius: 3px; }
+  .shot.paper img { background: #FFFFFF; }
+  .shot figcaption { font-size: .8125rem; line-height: 1.4; color: var(--ink-soft); }
+
+  .empty { display: none; padding: 2rem 0; color: var(--ink-soft); }
+  .empty.show { display: block; }
+
+  /* ---- Lightbox ---- */
+  dialog.lb {
+    border: 0; padding: 0; margin: auto; background: transparent; color: #F2F5F2;
+    max-width: 100vw; max-height: 100vh; width: 100vw; height: 100vh;
+  }
+  /* ::backdrop does not inherit custom properties in every browser, so the
+     scrim is spelled out; it is dark on purpose in both themes. */
+  dialog.lb::backdrop { background: rgba(8, 11, 9, .92); }
+  .lb-inner {
+    width: 100%; height: 100%; display: grid; grid-template-rows: 1fr auto;
+    padding: max(1rem, env(safe-area-inset-top, 0px)) 1rem max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+  .lb-stage { min-height: 0; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .75rem; }
+  .lb-img { min-height: 0; height: 100%; display: grid; place-items: center; }
+  .lb-img img { max-height: calc(100vh - 7rem); width: auto; max-width: 100%; border-radius: 28px; }
+  .lb-img img.paper { border-radius: 3px; background: #FFFFFF; }
+  .lb-bar { display: flex; justify-content: center; align-items: baseline; gap: 1rem; padding-top: .8rem; text-align: center; }
+  .lb-cap { max-width: 40rem; font-size: .9375rem; }
+  .lb-pos { font-size: .8125rem; opacity: .7; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .lb-btn {
+    width: 2.75rem; height: 2.75rem; border-radius: 50%; cursor: pointer;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #F2F5F2;
+    font: 500 1.25rem/1 var(--body); display: grid; place-items: center;
+  }
+  .lb-btn:hover { background: rgba(255,255,255,.18); }
+  .lb-btn[disabled] { opacity: .25; cursor: default; }
+  .lb-close { position: absolute; top: max(1rem, env(safe-area-inset-top, 0px)); right: 1rem; }
+  @media (max-width: 40rem) { .lb-stage { grid-template-columns: 1fr; } .lb-prev, .lb-next { display: none; } }
+
+  footer { padding-block: 0 3rem; color: var(--ink-faint); font-size: var(--step--1); }
+  footer p { margin: 0; max-width: 65ch; }
+
+  @media (prefers-reduced-motion: reduce) { .chev { transition: none; } html { scroll-behavior: auto; } }
+</style>
+
+<header class="masthead wrap">
+  <span class="eyebrow">Feature-Übersicht</span>
+  <h1>HippoTrophy</h1>
+  <p class="lede">Ein Trainingstagebuch für Hypertrophie- und Krafttraining. Alles bleibt auf dem Gerät: kein Konto, keine Anmeldung, kein Netzzugriff. Hier steht jede Funktion der App mit Bildern, wie sie aussieht und wie man sie benutzt.</p>
+  <ul class="meta">
+    <li>Version <strong>0.8.0</strong> · Build <strong>17</strong></li>
+    <li>Stand <strong>5. Oktober 2026</strong> (feature-075)</li>
+    <li><strong>38</strong> Funktionen · <strong>89</strong> Bilder</li>
+  </ul>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <nav class="nav" aria-label="Bereiche"><a href="#g-historie">Startseite und Historie<span>6</span></a><a href="#g-erfassen">Workout erfassen<span>15</span></a><a href="#g-bericht">PDF-Bericht<span>1</span></a><a href="#g-uebungen">Übungsliste<span>10</span></a><a href="#g-backup">Backup<span>3</span></a><a href="#g-einstellungen">Einstellungen und Hilfe<span>3</span></a></nav>
+    <div class="tools">
+      <label class="search">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg>
+        <input id="q" type="search" placeholder="Funktion suchen, z. B. Supersatz, RIR, Backup" autocomplete="off" aria-label="Funktion suchen">
+      </label>
+      <button class="btn" id="toggle-all" type="button">Alle aufklappen</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <p class="empty" id="empty">Keine Funktion passt zu dieser Suche.</p>
+  
+<section class="group" id="g-historie" aria-labelledby="h-historie">
+  <header class="g-head"><h2 id="h-historie">Startseite und Historie</h2><p>Was nach dem Öffnen der App zu sehen ist: alle Workouts, die laufende Woche und ein Jahr Training auf einen Blick.</p></header>
+  <div class="features">
+<details class="feature" id="startseite">
+  <summary><span class="sum-text"><span class="f-title">Startseite mit Wochenzähler</span><span class="f-teaser">Alle Workouts untereinander, oben die laufende Woche.</span></span><span class="f-count">1 Bild</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Die Startseite listet alle Workouts, das neueste oben, jeweils mit Name, Datum und der Zahl der Übungen und Sätze. Rechts neben dem Titel zählt „This Week“ Workouts und Sätze der laufenden Woche. Ein Satz zählt erst, wenn etwas darin eingetragen ist. Leere Sätze zählen nirgends, weder hier noch im Aktivitätsgraphen oder im Bericht.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Ein Workout von heute: „This Week“ zählt 1 Workout und 12 Sätze."><img src="img/start-mit-heute.webp" width="603" height="1311" loading="lazy" alt="Ein Workout von heute: „This Week“ zählt 1 Workout und 12 Sätze."></button><figcaption>Ein Workout von heute: „This Week“ zählt 1 Workout und 12 Sätze.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="aktivitaet">
+  <summary><span class="sum-text"><span class="f-title">Aktivitätsgraph</span><span class="f-teaser">Zwölf Monate Training als Raster, ein Kästchen pro Tag.</span></span><span class="f-count">3 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Unter dem Titel zeigt ein Raster die letzten zwölf Monate. Jede Spalte ist eine Woche, jede Zeile ein Wochentag, heute ist umrandet. Je mehr Sätze an einem Tag, desto kräftiger das Grün.</p><p>In den Einstellungen unter „Overview“ lassen sich der Graph, die Beschriftung der Wochentage und eine Legende ein- und ausschalten.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Der Graph über der Liste."><img src="img/start-historie.webp" width="603" height="1311" loading="lazy" alt="Der Graph über der Liste."></button><figcaption>Der Graph über der Liste.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Mit „Show Legend“ erklärt eine Skala von Less bis More die Grüntöne."><img src="img/aktivitaet-legende.webp" width="603" height="1311" loading="lazy" alt="Mit „Show Legend“ erklärt eine Skala von Less bis More die Grüntöne."></button><figcaption>Mit „Show Legend“ erklärt eine Skala von Less bis More die Grüntöne.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: Die Schalter dazu stehen in den Einstellungen unter „Overview“."><img src="img/settings-oben.webp" width="603" height="1311" loading="lazy" alt="Die Schalter dazu stehen in den Einstellungen unter „Overview“."></button><figcaption>Die Schalter dazu stehen in den Einstellungen unter „Overview“.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="zeitraum">
+  <summary><span class="sum-text"><span class="f-title">Historie nach Zeitraum filtern</span><span class="f-teaser">Last Week, Last Month oder ein eigener Zeitraum.</span></span><span class="f-count">3 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Rechts neben der Überschrift „History“ sitzt ein Menü für den Zeitraum. Mit einem Filter gruppiert die Liste die Workouts unter Zwischenüberschriften, etwa nach Monaten. Die Wahl bleibt auch nach einem Neustart der App erhalten. Liegt im Zeitraum kein Workout, bietet die Liste „Show All“ an.</p><div class="steps"><h4>So geht’s</h4><ol><li>Auf „All“ neben „History“ tippen.</li><li>Einen Zeitraum wählen oder „Custom Range…“ für ein eigenes Von und Bis.</li></ol></div></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Das Menü mit den Zeiträumen."><img src="img/historie-zeitraum-menu.webp" width="603" height="1311" loading="lazy" alt="Das Menü mit den Zeiträumen."></button><figcaption>Das Menü mit den Zeiträumen.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: „Last Month“: die Liste gruppiert nach Oktober und September."><img src="img/historie-gefiltert.webp" width="603" height="1311" loading="lazy" alt="„Last Month“: die Liste gruppiert nach Oktober und September."></button><figcaption>„Last Month“: die Liste gruppiert nach Oktober und September.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: Eigener Zeitraum mit Start- und Enddatum."><img src="img/historie-eigener-zeitraum.webp" width="603" height="1311" loading="lazy" alt="Eigener Zeitraum mit Start- und Enddatum."></button><figcaption>Eigener Zeitraum mit Start- und Enddatum.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="kopieren">
+  <summary><span class="sum-text"><span class="f-title">Workout wiederholen</span><span class="f-teaser">Ein früheres Workout als Vorlage für heute kopieren.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Langes Drücken auf ein Workout in der Liste bietet „Copy Workout“ an. Die Kopie trägt das heutige Datum, hat dieselben Übungen und Sätze und öffnet sich sofort im Editor. Wer sie unverändert abbricht, legt nichts an.</p><div class="steps"><h4>So geht’s</h4><ol><li>Lange auf ein Workout in der Liste drücken.</li><li>„Copy Workout“ tippen.</li><li>Werte anpassen und „Save“.</li></ol></div></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Langes Drücken öffnet „Copy Workout“."><img src="img/workout-kopieren-menu.webp" width="603" height="1311" loading="lazy" alt="Langes Drücken öffnet „Copy Workout“."></button><figcaption>Langes Drücken öffnet „Copy Workout“.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Die Kopie mit dem Datum von heute, bereit zum Anpassen."><img src="img/workout-kopie-editor.webp" width="603" height="1311" loading="lazy" alt="Die Kopie mit dem Datum von heute, bereit zum Anpassen."></button><figcaption>Die Kopie mit dem Datum von heute, bereit zum Anpassen.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="workout-loeschen">
+  <summary><span class="sum-text"><span class="f-title">Workout löschen</span><span class="f-teaser">In der Liste nach links wischen.</span></span><span class="f-count">1 Bild</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Über ein Workout in der Liste nach links wischen und „Delete“ tippen.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Nach links gewischt: der Knopf zum Löschen."><img src="img/workout-loeschen-wischen.webp" width="603" height="1311" loading="lazy" alt="Nach links gewischt: der Knopf zum Löschen."></button><figcaption>Nach links gewischt: der Knopf zum Löschen.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="detail">
+  <summary><span class="sum-text"><span class="f-title">Workout-Detailseite</span><span class="f-teaser">Alles, was in einem Workout steht, zum Nachlesen.</span></span><span class="f-count">4 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Ein Tipp auf ein Workout öffnet seine Detailseite: Datum, Zahl der Übungen und Sätze, jede Übung mit ihren Sätzen, Gewicht, Wiederholungen und Anstrengung, dazu die Notizen zu einzelnen Übungen und zum ganzen Workout. Links und rechts getrennt geloggte Sätze stehen in eigenen Blöcken, ein Supersatz als ein gemeinsamer Block.</p><p>Oben rechts führt „Edit“ in den Editor, der Knopf daneben zum PDF-Bericht.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Eine Übung mit eigenen Feldern (Rowing Erg), darunter Sätze mit Anstrengung und eine Übungsnotiz."><img src="img/workout-detail.webp" width="603" height="1311" loading="lazy" alt="Eine Übung mit eigenen Feldern (Rowing Erg), darunter Sätze mit Anstrengung und eine Übungsnotiz."></button><figcaption>Eine Übung mit eigenen Feldern (Rowing Erg), darunter Sätze mit Anstrengung und eine Übungsnotiz.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Am Ende die Notiz zum ganzen Workout."><img src="img/workout-detail-unten.webp" width="603" height="1311" loading="lazy" alt="Am Ende die Notiz zum ganzen Workout."></button><figcaption>Am Ende die Notiz zum ganzen Workout.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: RIR-Bewertungen als farbige Zahlen."><img src="img/detail-neues-workout.webp" width="603" height="1311" loading="lazy" alt="RIR-Bewertungen als farbige Zahlen."></button><figcaption>RIR-Bewertungen als farbige Zahlen.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="3" aria-label="Vergrößern: Links und rechts getrennt, darunter der Supersatz als Block."><img src="img/detail-neues-workout-unten.webp" width="603" height="1311" loading="lazy" alt="Links und rechts getrennt, darunter der Supersatz als Block."></button><figcaption>Links und rechts getrennt, darunter der Supersatz als Block.</figcaption></figure></div>
+  </div>
+</details></div>
+</section>
+<section class="group" id="g-erfassen" aria-labelledby="h-erfassen">
+  <header class="g-head"><h2 id="h-erfassen">Workout erfassen</h2><p>Der Editor, in dem ein Training entsteht: Übungen, Sätze, Bewertung und Notizen.</p></header>
+  <div class="features">
+<details class="feature" id="starten">
+  <summary><span class="sum-text"><span class="f-title">Workout starten</span><span class="f-teaser">Neues Workout mit Name, Datum und Notiz.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>„Start Workout“ oben rechts öffnet den Editor im Vollbild. Der Name ist optional, ohne Namen steht in der Liste das Datum. Das Datum steht auf jetzt und lässt sich über die Datumszeile ändern, etwa um ein Training nachzutragen. „Save“ speichert, „Cancel“ verwirft.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Der leere Editor."><img src="img/editor-leer.webp" width="603" height="1311" loading="lazy" alt="Der leere Editor."></button><figcaption>Der leere Editor.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Datum und Uhrzeit lassen sich nachträglich setzen."><img src="img/workout-datum.webp" width="603" height="1311" loading="lazy" alt="Datum und Uhrzeit lassen sich nachträglich setzen."></button><figcaption>Datum und Uhrzeit lassen sich nachträglich setzen.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="uebung-hinzufuegen">
+  <summary><span class="sum-text"><span class="f-title">Übung hinzufügen</span><span class="f-teaser">Aus der eigenen Liste wählen, suchen, filtern oder neu anlegen.</span></span><span class="f-count">4 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>„Add Exercise“ öffnet die Auswahl. Oben stehen die Standard-Übungen mit Gewicht und Wiederholungen, darunter die mit eigenen Feldern. Das Suchfeld unten und der Muskelgruppen-Filter oben rechts grenzen die Liste ein.</p><p>Ein Name, den es noch nicht gibt, lässt sich unter „New“ direkt anlegen. Er landet als Standard-Übung in der Übungsliste und kann dort später ausgebaut werden.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Die Auswahl mit den Standard-Übungen und ihren Muskelgruppen."><img src="img/uebung-hinzufuegen.webp" width="603" height="1311" loading="lazy" alt="Die Auswahl mit den Standard-Übungen und ihren Muskelgruppen."></button><figcaption>Die Auswahl mit den Standard-Übungen und ihren Muskelgruppen.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Suche nach „press“, darunter „New“ zum Anlegen."><img src="img/picker-suche.webp" width="603" height="1311" loading="lazy" alt="Suche nach „press“, darunter „New“ zum Anlegen."></button><figcaption>Suche nach „press“, darunter „New“ zum Anlegen.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: Filter nach Regionen oder einzelnen Muskelgruppen."><img src="img/picker-muskelfilter-chest.webp" width="603" height="1311" loading="lazy" alt="Filter nach Regionen oder einzelnen Muskelgruppen."></button><figcaption>Filter nach Regionen oder einzelnen Muskelgruppen.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="3" aria-label="Vergrößern: Gefiltert auf „Chest“."><img src="img/picker-gefiltert.webp" width="603" height="1311" loading="lazy" alt="Gefiltert auf „Chest“."></button><figcaption>Gefiltert auf „Chest“.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="saetze">
+  <summary><span class="sum-text"><span class="f-title">Sätze erfassen</span><span class="f-teaser">Gewicht und Wiederholungen eintragen, kopieren, löschen, verschieben.</span></span><span class="f-count">1 Bild</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>„Add Set“ legt einen Satz an. In der Satzzeile kopiert das Doppel-Symbol den Satz mit denselben Werten, das Minus löscht nur diesen Satz, und am Griff rechts lässt sich die Reihenfolge ziehen.</p><p>Mit „Start with One Set“ in den Einstellungen bringt jede neu hinzugefügte Übung gleich einen ersten Satz mit.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Drei Sätze Bankdrücken, darüber die Zeile mit der letzten Leistung."><img src="img/saetze-erfassen.webp" width="603" height="1311" loading="lazy" alt="Drei Sätze Bankdrücken, darüber die Zeile mit der letzten Leistung."></button><figcaption>Drei Sätze Bankdrücken, darüber die Zeile mit der letzten Leistung.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="letzte-leistung">
+  <summary><span class="sum-text"><span class="f-title">Letzte Leistung</span><span class="f-teaser">Was beim letzten Mal geschafft wurde, direkt unter dem Namen.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Eine aufgeklappte Übung zeigt unter ihrem Namen, wann und was zuletzt geloggt wurde, zum Beispiel „5 days ago: 1×8 @ 50.0 kg …“. Ein Tipp darauf oder auf das Uhr-Symbol öffnet die ganze Historie der Übung, ohne den Editor zu verlassen.</p><p>Wer den Platz lieber hat, schaltet „Show Last Performance“ in den Einstellungen aus.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Auch für eigene Felder: „yesterday: Duration 10:00 · Distance (m) 2750 …“."><img src="img/eigene-felder.webp" width="603" height="1311" loading="lazy" alt="Auch für eigene Felder: „yesterday: Duration 10:00 · Distance (m) 2750 …“."></button><figcaption>Auch für eigene Felder: „yesterday: Duration 10:00 · Distance (m) 2750 …“.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Die Historie der Übung, direkt aus dem Editor geöffnet."><img src="img/historie-im-editor.webp" width="603" height="1311" loading="lazy" alt="Die Historie der Übung, direkt aus dem Editor geöffnet."></button><figcaption>Die Historie der Übung, direkt aus dem Editor geöffnet.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="anstrengung">
+  <summary><span class="sum-text"><span class="f-title">Anstrengung bewerten</span><span class="f-teaser">Easy, Normal oder Hard für jeden Satz.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Die Balken am Ende einer Satzzeile zeigen, wie schwer der Satz war: ein Balken für leicht, zwei für normal, drei für schwer. Ein neuer Satz beginnt unbewertet mit grauen Balken. Ein Tipp öffnet die Auswahl, „Clear“ nimmt die Bewertung zurück.</p><p>Die Bewertung erscheint auch auf der Detailseite, in der Historie und im PDF-Bericht.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Die Auswahl Easy, Normal, Hard."><img src="img/anstrengung-waehlen.webp" width="603" height="1311" loading="lazy" alt="Die Auswahl Easy, Normal, Hard."></button><figcaption>Die Auswahl Easy, Normal, Hard.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Zwei Sätze normal (blau), einer schwer (orange)."><img src="img/anstrengung-bewertet.webp" width="603" height="1311" loading="lazy" alt="Zwei Sätze normal (blau), einer schwer (orange)."></button><figcaption>Zwei Sätze normal (blau), einer schwer (orange).</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="rir">
+  <summary><span class="sum-text"><span class="f-title">Reps in Reserve (RIR)</span><span class="f-teaser">Statt Easy, Normal, Hard die Wiederholungen, die noch drin waren.</span></span><span class="f-count">4 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>„Rate Effort“ in den Einstellungen bestimmt, wie neue Übungen bewerten: „Easy, Normal, Hard“, „Reps in Reserve (RIR)“ oder „Off“. Bereits geloggte Übungen behalten ihre Skala.</p><p>Für eine einzelne Übung im Workout wechselt langes Drücken auf die Kopfzeile und dann „Rate Effort“ die Skala. Sind schon Sätze bewertet, fragt die App vorher, denn die alten Bewertungen passen nicht zur neuen Skala.</p><p>RIR reicht von 0 (Muskelversagen) bis 10 in halben Schritten. Die Schnellwahl bietet 0, 0,5, 1, 2, 3 und 4+, feiner geht es mit dem Stepper.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Die Voreinstellung für neue Übungen."><img src="img/rate-effort-einstellung.webp" width="603" height="1311" loading="lazy" alt="Die Voreinstellung für neue Übungen."></button><figcaption>Die Voreinstellung für neue Übungen.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Skala einer Übung wechseln: Rückfrage, weil schon Sätze bewertet sind."><img src="img/skala-wechseln-rueckfrage.webp" width="603" height="1311" loading="lazy" alt="Skala einer Übung wechseln: Rückfrage, weil schon Sätze bewertet sind."></button><figcaption>Skala einer Übung wechseln: Rückfrage, weil schon Sätze bewertet sind.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: Die RIR-Auswahl mit Schnellwahl und Stepper."><img src="img/rir-auswahl.webp" width="603" height="1311" loading="lazy" alt="Die RIR-Auswahl mit Schnellwahl und Stepper."></button><figcaption>Die RIR-Auswahl mit Schnellwahl und Stepper.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="3" aria-label="Vergrößern: RIR 2, 1 und 0 als farbige Zahlen."><img src="img/rir-bewertet.webp" width="603" height="1311" loading="lazy" alt="RIR 2, 1 und 0 als farbige Zahlen."></button><figcaption>RIR 2, 1 und 0 als farbige Zahlen.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="notizen">
+  <summary><span class="sum-text"><span class="f-title">Notizen</span><span class="f-teaser">Zu jeder Übung und zum ganzen Workout.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Das Notiz-Symbol in der Kopfzeile einer Übung öffnet eine Notiz für diese Übung in diesem Workout. Ist das Symbol gefüllt, steht schon etwas darin. Unten im Editor steht das Notizfeld für das ganze Workout, es wächst mit dem Text.</p><p>Eine Notiz allein genügt, damit das Workout in der Historie der Übung auftaucht.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Notiz zu einer Übung."><img src="img/uebungsnotiz.webp" width="603" height="1311" loading="lazy" alt="Notiz zu einer Übung."></button><figcaption>Notiz zu einer Übung.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Notiz zum ganzen Workout."><img src="img/workout-notizen.webp" width="603" height="1311" loading="lazy" alt="Notiz zum ganzen Workout."></button><figcaption>Notiz zum ganzen Workout.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="ordnen">
+  <summary><span class="sum-text"><span class="f-title">Einklappen und umsortieren</span><span class="f-teaser">Übersicht in langen Workouts.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Ein Tipp auf den Namen einer Übung klappt sie ein oder aus. Mit „Collapse Other Exercises“ in den Einstellungen bleibt immer nur die gerade bearbeitete offen.</p><p>„Reorder“ unter den Übungen öffnet eine Liste, in der sich die Reihenfolge der Übungen ziehen lässt.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Alle Übungen eingeklappt."><img src="img/editor-eingeklappt.webp" width="603" height="1311" loading="lazy" alt="Alle Übungen eingeklappt."></button><figcaption>Alle Übungen eingeklappt.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: „Reorder Exercises“: Rowing Erg nach oben gezogen."><img src="img/reihenfolge-nach-ziehen.webp" width="603" height="1311" loading="lazy" alt="„Reorder Exercises“: Rowing Erg nach oben gezogen."></button><figcaption>„Reorder Exercises“: Rowing Erg nach oben gezogen.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="uebung-entfernen">
+  <summary><span class="sum-text"><span class="f-title">Übung aus dem Workout entfernen</span><span class="f-teaser">Langes Drücken auf die Kopfzeile.</span></span><span class="f-count">1 Bild</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Langes Drücken auf die Kopfzeile einer Übung öffnet ihr Menü. „Delete Exercise“ entfernt sie samt Sätzen, „Rate Effort“ wechselt die Bewertungsskala, und „Convert to Superset…“ erscheint, sobald eine zweite Übung im Workout ist.</p><p>Ein einfacher Tipp klappt nur ein und aus. So geht keine Übung aus Versehen verloren.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Das Menü einer Übung."><img src="img/uebung-kontextmenu.webp" width="603" height="1311" loading="lazy" alt="Das Menü einer Übung."></button><figcaption>Das Menü einer Übung.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="verwerfen">
+  <summary><span class="sum-text"><span class="f-title">Änderungen verwerfen</span><span class="f-teaser">Abbrechen fragt nach, wenn sich etwas geändert hat.</span></span><span class="f-count">1 Bild</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>„Cancel“ schließt den Editor. Hat sich etwas geändert, fragt die App, ob die Änderungen verworfen werden sollen. Ohne Änderungen schließt er sofort.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Die Rückfrage vor dem Verwerfen."><img src="img/aenderungen-verwerfen.webp" width="603" height="1311" loading="lazy" alt="Die Rückfrage vor dem Verwerfen."></button><figcaption>Die Rückfrage vor dem Verwerfen.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="einseitig">
+  <summary><span class="sum-text"><span class="f-title">Einseitiges Training</span><span class="f-teaser">Normal, einseitig mit gleichem Gewicht oder links und rechts getrennt.</span></span><span class="f-count">3 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Bei Übungen, die es anbieten, sitzt neben dem Namen ein kleines Abzeichen mit dem Modus. Ein Tipp darauf wechselt zwischen drei Modi:</p><ul><li>„Normal“: beidseitig.</li><li>„One-Sided, Same Weight“ (Abzeichen „1-sided“): eine Satzliste, das Gewicht gilt pro Seite.</li><li>„One-Sided, Log L/R“ (Abzeichen „L/R“): ein Umschalter Left/Right, beide Seiten mit eigenen Sätzen.</li></ul><p>Beim Wechsel geht nichts verloren. Wer L/R verlässt, wird gefragt, weil links und rechts dann zu einer Liste zusammenfallen. Eine Übung kommt mit dem Modus ins Workout, mit dem sie zuletzt geloggt wurde.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Das Menü mit den drei Modi."><img src="img/einseitig-modi.webp" width="603" height="1311" loading="lazy" alt="Das Menü mit den drei Modi."></button><figcaption>Das Menü mit den drei Modi.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: „1-sided“: eine Liste, das Gewicht gilt pro Seite."><img src="img/einseitig-gleiches-gewicht.webp" width="603" height="1311" loading="lazy" alt="„1-sided“: eine Liste, das Gewicht gilt pro Seite."></button><figcaption>„1-sided“: eine Liste, das Gewicht gilt pro Seite.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: „L/R“: eigene Sätze für links und rechts."><img src="img/links-rechts.webp" width="603" height="1311" loading="lazy" alt="„L/R“: eigene Sätze für links und rechts."></button><figcaption>„L/R“: eigene Sätze für links und rechts.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="per-side">
+  <summary><span class="sum-text"><span class="f-title">Seiten vergleichen</span><span class="f-teaser">Beidseitige und einseitige Einträge auf eine Zahl bringen.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Enthält die Historie einer Übung beidseitige und einseitige Einträge, erscheint oben links der Knopf „Per Side“. Eingeschaltet steht bei den beidseitigen Sätzen das Gewicht pro Seite in Klammern, etwa „9.5 kg (4.8/side)“. So lassen sich die Zahlen direkt vergleichen.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Oben ein einseitiger Eintrag, darunter beidseitige."><img src="img/historie-per-side-aus.webp" width="603" height="1311" loading="lazy" alt="Oben ein einseitiger Eintrag, darunter beidseitige."></button><figcaption>Oben ein einseitiger Eintrag, darunter beidseitige.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: „Per Side“ an: das Gewicht pro Seite in Klammern."><img src="img/historie-per-side-an.webp" width="603" height="1311" loading="lazy" alt="„Per Side“ an: das Gewicht pro Seite in Klammern."></button><figcaption>„Per Side“ an: das Gewicht pro Seite in Klammern.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="supersatz">
+  <summary><span class="sum-text"><span class="f-title">Supersätze</span><span class="f-teaser">Zwei Übungen im Wechsel: A1, B1, A2, B2 …</span></span><span class="f-count">4 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Ein Supersatz verbindet zwei Übungen, die abwechselnd trainiert werden. „Add Exercise“ und dann „Superset“ wählt beide nacheinander, die erste wird A, die zweite B. In der Karte stehen die Sätze in der Reihenfolge, in der sie gemacht wurden, die von B farbig hinterlegt. „Add A“ und „Add B“ loggen den nächsten Satz, Ziehen verschiebt einen.</p><p>Zwei getrennt geloggte Übungen lassen sich nachträglich verbinden: langes Drücken auf eine davon und „Convert to Superset…“. Detailseite und PDF-Bericht zeigen das Paar als einen Block. Jede der beiden behält ihren Modus und ihre Historie; Links/Rechts-Logging gibt es im Supersatz nicht.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Auswahl der zweiten Übung, unten beide Picks und „Create“."><img src="img/supersatz-auswahl.webp" width="603" height="1311" loading="lazy" alt="Auswahl der zweiten Übung, unten beide Picks und „Create“."></button><figcaption>Auswahl der zweiten Übung, unten beide Picks und „Create“.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Die Supersatz-Karte mit „Add A“ und „Add B“."><img src="img/supersatz-karte.webp" width="603" height="1311" loading="lazy" alt="Die Supersatz-Karte mit „Add A“ und „Add B“."></button><figcaption>Die Supersatz-Karte mit „Add A“ und „Add B“.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: Eine bestehende Übung mit einer anderen verbinden."><img src="img/in-supersatz-umwandeln.webp" width="603" height="1311" loading="lazy" alt="Eine bestehende Übung mit einer anderen verbinden."></button><figcaption>Eine bestehende Übung mit einer anderen verbinden.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="3" aria-label="Vergrößern: Auf der Detailseite: ein Block, die Sätze im Wechsel."><img src="img/workout-detail-supersatz.webp" width="603" height="1311" loading="lazy" alt="Auf der Detailseite: ein Block, die Sätze im Wechsel."></button><figcaption>Auf der Detailseite: ein Block, die Sätze im Wechsel.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="eigene-felder-erfassen">
+  <summary><span class="sum-text"><span class="f-title">Übungen mit eigenen Feldern erfassen</span><span class="f-teaser">Dauer, Distanz, Zahl oder Text statt Gewicht und Wiederholungen.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Übungen mit eigenen Feldern zeigen im Editor genau ihre Felder, bis zu sechs, drei pro Zeile. Ohne „Track Sets“ gibt es keine Sätze, die Felder werden einmal pro Workout ausgefüllt, wie hier beim Rudern. Eine Dauer wird über Räder für Stunden, Minuten und Sekunden eingestellt.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Rowing Erg mit Duration, Distance, Avg. Watts und Feel."><img src="img/eigene-felder.webp" width="603" height="1311" loading="lazy" alt="Rowing Erg mit Duration, Distance, Avg. Watts und Feel."></button><figcaption>Rowing Erg mit Duration, Distance, Avg. Watts und Feel.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Die Dauer-Auswahl."><img src="img/dauer-auswahl-10min.webp" width="603" height="1311" loading="lazy" alt="Die Dauer-Auswahl."></button><figcaption>Die Dauer-Auswahl.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="uebungshistorie">
+  <summary><span class="sum-text"><span class="f-title">Übungshistorie</span><span class="f-teaser">Jede frühere Einheit einer Übung.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Das Uhr-Symbol an einer Übung öffnet ihre Historie: jedes Workout, in dem sie vorkam, mit Datum, Workout-Name, Sätzen und Anstrengung. Das Symbol sitzt im Editor, auf der Detailseite und an jeder Zeile der Übungsliste.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Die Historie von Barbell Row."><img src="img/uebungshistorie.webp" width="603" height="1311" loading="lazy" alt="Die Historie von Barbell Row."></button><figcaption>Die Historie von Barbell Row.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Dieselbe Ansicht aus der Übungsliste geöffnet."><img src="img/historie-aus-liste.webp" width="603" height="1311" loading="lazy" alt="Dieselbe Ansicht aus der Übungsliste geöffnet."></button><figcaption>Dieselbe Ansicht aus der Übungsliste geöffnet.</figcaption></figure></div>
+  </div>
+</details></div>
+</section>
+<section class="group" id="g-bericht" aria-labelledby="h-bericht">
+  <header class="g-head"><h2 id="h-bericht">PDF-Bericht</h2><p>Ein Workout als Datei, die sich weitergeben oder drucken lässt.</p></header>
+  <div class="features">
+<details class="feature" id="pdf">
+  <summary><span class="sum-text"><span class="f-title">PDF-Bericht</span><span class="f-teaser">Ein Workout als PDF, etwa für den Coach. Noch als Beta gekennzeichnet.</span></span><span class="f-count">5 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Der Teilen-Knopf oben rechts auf der Detailseite öffnet „Share Workout“. Dort steht, wie viele Übungen und Sätze in den Bericht kommen und welche nicht: Übungen ohne Gewicht und Wiederholungen fehlen vorerst, der Bericht nennt sie auf seiner letzten Seite. Die Gewichtseinheit lässt sich nur für diesen Bericht umstellen.</p><p>„Export PDF“ erzeugt die Datei und öffnet das Teilen-Menü von iOS. Der Bericht zeigt Volumen pro Übung und gesamt, die verwendete Anstrengungsskala, Notizen, links und rechts nebeneinander und Supersätze als Block mit A1, B1, A2 … Längere Workouts laufen auf weitere Seiten.</p><div class="steps"><h4>So geht’s</h4><ol><li>Workout öffnen.</li><li>Teilen-Knopf oben rechts.</li><li>„Export PDF“ und im Teilen-Menü das Ziel wählen.</li></ol></div></div>
+    <div class="gallery" role="list"><figure class="shot paper"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: „Share Workout“ mit Beta-Hinweis, Umfang und Einheit."><img src="img/pdf-export-optionen.webp" width="800" height="1132" loading="lazy" alt="„Share Workout“ mit Beta-Hinweis, Umfang und Einheit."></button><figcaption>„Share Workout“ mit Beta-Hinweis, Umfang und Einheit.</figcaption></figure><figure class="shot paper"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Das Teilen-Menü von iOS mit der fertigen PDF-Datei."><img src="img/pdf-teilen.webp" width="800" height="1132" loading="lazy" alt="Das Teilen-Menü von iOS mit der fertigen PDF-Datei."></button><figcaption>Das Teilen-Menü von iOS mit der fertigen PDF-Datei.</figcaption></figure><figure class="shot paper"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: Bericht, Seite 1: Kennzahlen, RIR-Skala, Notizen, links und rechts nebeneinander."><img src="img/pdf-upper-1.webp" width="800" height="1132" loading="lazy" alt="Bericht, Seite 1: Kennzahlen, RIR-Skala, Notizen, links und rechts nebeneinander."></button><figcaption>Bericht, Seite 1: Kennzahlen, RIR-Skala, Notizen, links und rechts nebeneinander.</figcaption></figure><figure class="shot paper"><button type="button" class="zoom" data-index="3" aria-label="Vergrößern: Seite 2: der Supersatz als Block, eine einseitige Übung mit Volumen pro Seite."><img src="img/pdf-upper-2.webp" width="800" height="1132" loading="lazy" alt="Seite 2: der Supersatz als Block, eine einseitige Übung mit Volumen pro Seite."></button><figcaption>Seite 2: der Supersatz als Block, eine einseitige Übung mit Volumen pro Seite.</figcaption></figure><figure class="shot paper"><button type="button" class="zoom" data-index="4" aria-label="Vergrößern: Ein anderes Workout mit der Skala Easy, Normal, Hard."><img src="img/pdf-pullb-1.webp" width="800" height="1132" loading="lazy" alt="Ein anderes Workout mit der Skala Easy, Normal, Hard."></button><figcaption>Ein anderes Workout mit der Skala Easy, Normal, Hard.</figcaption></figure></div>
+  </div>
+</details></div>
+</section>
+<section class="group" id="g-uebungen" aria-labelledby="h-uebungen">
+  <header class="g-head"><h2 id="h-uebungen">Übungsliste</h2><p>Settings → Exercises: alle Übungen, die im Workout zur Auswahl stehen, und was sie loggen.</p></header>
+  <div class="features">
+<details class="feature" id="liste">
+  <summary><span class="sum-text"><span class="f-title">Die eigene Übungsliste</span><span class="f-teaser">Standard-Übungen oben, Übungen mit eigenen Feldern darunter.</span></span><span class="f-count">3 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Die Übungsliste enthält alles, was beim Hinzufügen zur Auswahl steht. Oben die Standard-Übungen in einem Abschnitt, der sich einklappen lässt, darunter die mit eigenen Feldern. Unter jedem Namen stehen die Muskelgruppen, bei Custom-Übungen auch, was sie loggen, dazu ein farbiges Abzeichen für die Kategorie.</p><p>Das Uhr-Symbol an jeder Zeile öffnet die Historie der Übung. Ist es grau, wurde die Übung noch nie geloggt.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Die Standard-Übungen mit Muskelgruppen."><img src="img/uebungsliste.webp" width="603" height="1311" loading="lazy" alt="Die Standard-Übungen mit Muskelgruppen."></button><figcaption>Die Standard-Übungen mit Muskelgruppen.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Standard-Abschnitt eingeklappt."><img src="img/standard-eingeklappt.webp" width="603" height="1311" loading="lazy" alt="Standard-Abschnitt eingeklappt."></button><figcaption>Standard-Abschnitt eingeklappt.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: Custom-Übungen und die Bereiche zum Anlegen und Zusammenführen."><img src="img/uebungsliste-unten-2.webp" width="603" height="1311" loading="lazy" alt="Custom-Übungen und die Bereiche zum Anlegen und Zusammenführen."></button><figcaption>Custom-Übungen und die Bereiche zum Anlegen und Zusammenführen.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="anlegen">
+  <summary><span class="sum-text"><span class="f-title">Übungen anlegen</span><span class="f-teaser">Standard per Name, Custom über den vollen Editor.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Eine Standard-Übung entsteht mit einem Namen unter „Add Standard Exercise“. Muskelgruppen und Kategorie lassen sich danach setzen. „New Exercise with Fields…“ öffnet den vollen Editor für alles, was etwas anderes loggt: Cardio mit Zeit und Distanz oder eine Kraftübung mit einem zusätzlichen Wert.</p><p>Auch beim Hinzufügen im Workout lässt sich ein neuer Name direkt anlegen.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Eine Standard-Übung per Name anlegen."><img src="img/standarduebung-anlegen.webp" width="603" height="1311" loading="lazy" alt="Eine Standard-Übung per Name anlegen."></button><figcaption>Eine Standard-Übung per Name anlegen.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Der Editor für eine neue Übung mit eigenen Feldern."><img src="img/neue-uebung-mit-feldern.webp" width="603" height="1311" loading="lazy" alt="Der Editor für eine neue Übung mit eigenen Feldern."></button><figcaption>Der Editor für eine neue Übung mit eigenen Feldern.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="bearbeiten">
+  <summary><span class="sum-text"><span class="f-title">Übung bearbeiten</span><span class="f-teaser">Name, Kategorie, Muskelgruppen und was eine Übung loggt.</span></span><span class="f-count">3 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Ein Tipp auf eine Übung öffnet ihren Editor. Oben rechts sagt ein Abzeichen, ob sie „Standard“ oder „Custom“ ist. Bei einer Standard-Übung bleibt der Editor kompakt: Name und Muskelgruppen, darunter steht, wann eine Übung als Custom gilt (andere Kategorie, eigenes Feld, Weight oder Reps aus, Track Sets oder One-Sided Training aus).</p><p>„Add Custom Fields…“ klappt den Rest auf: Kategorie, „Track Sets“, „One-Sided Training“, die Standardfelder und eigene Felder. Eine Umbenennung folgt der Übung durch die ganze Historie.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Der kompakte Editor einer Standard-Übung."><img src="img/uebung-bearbeiten-standard.webp" width="603" height="1311" loading="lazy" alt="Der kompakte Editor einer Standard-Übung."></button><figcaption>Der kompakte Editor einer Standard-Übung.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Aufgeklappt: Kategorie und Muskelgruppen …"><img src="img/uebung-bearbeiten-erweitert-oben.webp" width="603" height="1311" loading="lazy" alt="Aufgeklappt: Kategorie und Muskelgruppen …"></button><figcaption>Aufgeklappt: Kategorie und Muskelgruppen …</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: … Track Sets, One-Sided Training, Standardfelder und eigene Felder."><img src="img/uebung-bearbeiten-unten.webp" width="603" height="1311" loading="lazy" alt="… Track Sets, One-Sided Training, Standardfelder und eigene Felder."></button><figcaption>… Track Sets, One-Sided Training, Standardfelder und eigene Felder.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="felder">
+  <summary><span class="sum-text"><span class="f-title">Eigene Felder</span><span class="f-teaser">Bis zu sechs Felder: Text, Zahl oder Dauer.</span></span><span class="f-count">3 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Unter „Own Fields“ fügt „Add Field“ ein Feld hinzu, mit Titel und Typ (Text, Number oder Duration). Zusammen mit Weight und Reps sind sechs Felder möglich.</p><p>Ist die Übung schon geloggt, steht direkt am Feld, was mit den bisherigen Workouts passiert, etwa „Added empty to 3 logged workouts“. Beim Speichern fasst „Apply Changes?“ das noch einmal zusammen. „Convert to Standard Exercise“ macht aus einer Custom-Übung wieder eine reine Gewicht-und-Wiederholungen-Übung.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Farmer&#x27;s Carry: Weight plus Distance und Duration."><img src="img/uebung-eigene-felder-unten.webp" width="603" height="1311" loading="lazy" alt="Farmer&#x27;s Carry: Weight plus Distance und Duration."></button><figcaption>Farmer&#x27;s Carry: Weight plus Distance und Duration.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Ein neues Feld „Grip“ mit dem Hinweis, was es für alte Workouts bedeutet."><img src="img/neues-feld.webp" width="603" height="1311" loading="lazy" alt="Ein neues Feld „Grip“ mit dem Hinweis, was es für alte Workouts bedeutet."></button><figcaption>Ein neues Feld „Grip“ mit dem Hinweis, was es für alte Workouts bedeutet.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: Die Rückfrage beim Speichern."><img src="img/aenderung-auswirkung.webp" width="603" height="1311" loading="lazy" alt="Die Rückfrage beim Speichern."></button><figcaption>Die Rückfrage beim Speichern.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="ohne-saetze">
+  <summary><span class="sum-text"><span class="f-title">Einmal pro Workout statt in Sätzen</span><span class="f-teaser">„Track Sets“ aus, etwa fürs Rudern.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Mit ausgeschaltetem „Track Sets“ loggt eine Übung ihre Felder einmal pro Workout, etwa eine Rudereinheit mit Dauer, Distanz, Watt und Gefühl.</p><p>Wer „Track Sets“ bei einer schon geloggten Übung ausschaltet, verliert nichts: Jeder Satz wird im Workout zu einem eigenen Eintrag.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Rowing Erg: Kategorie Cardio, Track Sets aus."><img src="img/uebung-ohne-saetze.webp" width="603" height="1311" loading="lazy" alt="Rowing Erg: Kategorie Cardio, Track Sets aus."></button><figcaption>Rowing Erg: Kategorie Cardio, Track Sets aus.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Die vier eigenen Felder."><img src="img/uebung-ohne-saetze-unten.webp" width="603" height="1311" loading="lazy" alt="Die vier eigenen Felder."></button><figcaption>Die vier eigenen Felder.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="kategorie">
+  <summary><span class="sum-text"><span class="f-title">Kategorien</span><span class="f-teaser">Strength, Cardio, Mobility oder eigene.</span></span><span class="f-count">1 Bild</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Jede Übung kann einer Kategorie angehören: Strength, Cardio, Mobility oder einer eigenen, die über „New Category…“ direkt im Editor entsteht. Die Kategorie erscheint als farbiges Abzeichen in der Liste. Ob eine Übung einseitiges Training anbietet, richtet sich zunächst nach ihr und lässt sich pro Übung ändern.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Eine neue Kategorie anlegen."><img src="img/neue-kategorie.webp" width="603" height="1311" loading="lazy" alt="Eine neue Kategorie anlegen."></button><figcaption>Eine neue Kategorie anlegen.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="muskelgruppen">
+  <summary><span class="sum-text"><span class="f-title">Muskelgruppen</span><span class="f-teaser">Was eine Übung trainiert, und Filtern danach.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Jede Übung kann mehrere der 13 Muskelgruppen tragen, ein Kreuzheben etwa Back, Hamstrings und Glutes. Sie stehen unter dem Namen in Liste und Auswahl.</p><p>Der Filter in Übungsliste und Auswahl grenzt nach Muskelgruppen oder ganzen Regionen ein. „Legs“ steht für Quads, Hamstrings, Glutes, Adductors, Abductors und Calves.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Muskelgruppen einer Übung wählen."><img src="img/muskelgruppen.webp" width="603" height="1311" loading="lazy" alt="Muskelgruppen einer Übung wählen."></button><figcaption>Muskelgruppen einer Übung wählen.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Die Übungsliste gefiltert auf „Legs“."><img src="img/liste-gefiltert.webp" width="603" height="1311" loading="lazy" alt="Die Übungsliste gefiltert auf „Legs“."></button><figcaption>Die Übungsliste gefiltert auf „Legs“.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="uebung-loeschen">
+  <summary><span class="sum-text"><span class="f-title">Übung aus der Liste löschen</span><span class="f-teaser">Nach links wischen. Geloggtes bleibt.</span></span><span class="f-count">1 Bild</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>In der Übungsliste nach links über eine Übung wischen und „Delete“ tippen. Was mit ihr geloggt wurde, bleibt in den Workouts stehen.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Nach links gewischt: der Knopf zum Löschen."><img src="img/uebung-loeschen-wischen-langer-name.webp" width="603" height="1311" loading="lazy" alt="Nach links gewischt: der Knopf zum Löschen."></button><figcaption>Nach links gewischt: der Knopf zum Löschen.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="zusammenfuehren">
+  <summary><span class="sum-text"><span class="f-title">Zwei Übungen zusammenführen</span><span class="f-teaser">Für zwei Namen, die dieselbe Übung meinen.</span></span><span class="f-count">3 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>„Merge Two Exercises…“ steht unten in der Übungsliste. Die erste Übung verschwindet, alles mit ihr Geloggte wandert zur zweiten, die ihren Namen, ihre Kategorie und ihre Muskelgruppen behält. Für jedes Feld der ersten Übung wird festgelegt, welchem Feld der zweiten es entspricht oder ob es als neues Feld mitkommt. Vor dem Zusammenführen fragt die App noch einmal.</p><div class="steps"><h4>So geht’s</h4><ol><li>„Merge Two Exercises…“ tippen.</li><li>Unter „Merge“ die Übung wählen, die verschwindet, unter „Into“ die, die bleibt.</li><li>Felder zuordnen, „Merge“ und bestätigen.</li></ol></div></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Das leere Formular."><img src="img/zusammenfuehren-leer.webp" width="603" height="1311" loading="lazy" alt="Das leere Formular."></button><figcaption>Das leere Formular.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Cable Fly geht in Pec Deck auf, die Felder sind zugeordnet."><img src="img/zusammenfuehren-gewaehlt.webp" width="603" height="1311" loading="lazy" alt="Cable Fly geht in Pec Deck auf, die Felder sind zugeordnet."></button><figcaption>Cable Fly geht in Pec Deck auf, die Felder sind zugeordnet.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: Die letzte Rückfrage."><img src="img/zusammenfuehren-bestaetigen.webp" width="603" height="1311" loading="lazy" alt="Die letzte Rückfrage."></button><figcaption>Die letzte Rückfrage.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="liste-importieren">
+  <summary><span class="sum-text"><span class="f-title">Übungsliste importieren</span><span class="f-teaser">Eine mitgelieferte Liste oder eine JSON-Datei.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>„Import“ oben in der Übungsliste. Die App bringt eine fertige Liste mit (Nannes Favorites, 45 Übungen) und liest JSON-Dateien im selben Format. Sie zeigt vorher, wie viele Übungen neu wären und wie viele es schon gibt, und einzelne Übungen lassen sich abwählen.</p><p>Ein Import fügt nur hinzu. Nichts wird entfernt oder überschrieben.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Die mitgelieferte Liste und der Import aus einer Datei."><img src="img/liste-importieren.webp" width="603" height="1311" loading="lazy" alt="Die mitgelieferte Liste und der Import aus einer Datei."></button><figcaption>Die mitgelieferte Liste und der Import aus einer Datei.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Die neuen Übungen der Liste, einzeln abwählbar."><img src="img/liste-importieren-detail.webp" width="603" height="1311" loading="lazy" alt="Die neuen Übungen der Liste, einzeln abwählbar."></button><figcaption>Die neuen Übungen der Liste, einzeln abwählbar.</figcaption></figure></div>
+  </div>
+</details></div>
+</section>
+<section class="group" id="g-backup" aria-labelledby="h-backup">
+  <header class="g-head"><h2 id="h-backup">Backup</h2><p>Alles bleibt auf dem Gerät. Ein Backup ist eine JSON-Datei, die man selbst sichert und wieder einliest.</p></header>
+  <div class="features">
+<details class="feature" id="export">
+  <summary><span class="sum-text"><span class="f-title">Backup exportieren</span><span class="f-teaser">Übungen und Workouts in eine Datei.</span></span><span class="f-count">3 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Das Menü „Backup“ oben links, dann „Export Backup“. Alles, was eingeschaltet bleibt, landet in einer Datei. Wer etwa nur die Übungsliste weitergeben will, schaltet „Workouts“ aus. Gesichert wird über den Dialog von iOS, zum Beispiel in der Dateien-App.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Das Menü „Backup“ auf der Startseite."><img src="img/backup-menu.webp" width="603" height="1311" loading="lazy" alt="Das Menü „Backup“ auf der Startseite."></button><figcaption>Das Menü „Backup“ auf der Startseite.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Übungen und Workouts, beide eingeschaltet."><img src="img/backup-export.webp" width="603" height="1311" loading="lazy" alt="Übungen und Workouts, beide eingeschaltet."></button><figcaption>Übungen und Workouts, beide eingeschaltet.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: Nur die Übungsliste exportieren."><img src="img/backup-export-nur-uebungen.webp" width="603" height="1311" loading="lazy" alt="Nur die Übungsliste exportieren."></button><figcaption>Nur die Übungsliste exportieren.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="import">
+  <summary><span class="sum-text"><span class="f-title">Backup importieren</span><span class="f-teaser">Hinzufügen oder alles ersetzen.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>„Backup“, dann „Import Backup“ und die Datei wählen. Das Sheet zeigt, wann die Datei exportiert wurde und was darin steht. Übungen und Workouts lassen sich einzeln abwählen.</p><p>„Add“ fügt hinzu, „Replace All“ löscht vorher die vorhandenen Workouts. Workouts, die schon auf dem Gerät sind, werden übersprungen. Derselbe Import zweimal legt also nichts doppelt an.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Was in der Datei steht, „Add“ oder „Replace All“."><img src="img/backup-import-optionen.webp" width="603" height="1311" loading="lazy" alt="Was in der Datei steht, „Add“ oder „Replace All“."></button><figcaption>Was in der Datei steht, „Add“ oder „Replace All“.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Das Ergebnis: 39 Übungen und 40 Workouts hinzugefügt."><img src="img/backup-import-ergebnis.webp" width="603" height="1311" loading="lazy" alt="Das Ergebnis: 39 Übungen und 40 Workouts hinzugefügt."></button><figcaption>Das Ergebnis: 39 Übungen und 40 Workouts hinzugefügt.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="review">
+  <summary><span class="sum-text"><span class="f-title">Unterschiede beim Import prüfen</span><span class="f-teaser">Die App fragt nach, statt still zu entscheiden.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Weicht eine Übung in der Datei von der gleichnamigen auf dem Gerät ab, etwa bei Muskelgruppen oder Kategorie, steht im Import-Sheet „Review“ statt „Import“. Im Review stehen beide Fassungen untereinander, „Mine“ und „File“, und es wird gewählt, welche gilt.</p><p>Unterscheiden sich die Felder, kann die Übung aus der Datei übersprungen, unter anderem Namen importiert oder in die eigene zusammengeführt werden.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Eine Übung in der Datei weicht ab: „Review“ statt „Import“."><img src="img/import-sheet.webp" width="603" height="1311" loading="lazy" alt="Eine Übung in der Datei weicht ab: „Review“ statt „Import“."></button><figcaption>Eine Übung in der Datei weicht ab: „Review“ statt „Import“.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Pec Deck: Muskelgruppen auf dem Gerät und in der Datei."><img src="img/import-review.webp" width="603" height="1311" loading="lazy" alt="Pec Deck: Muskelgruppen auf dem Gerät und in der Datei."></button><figcaption>Pec Deck: Muskelgruppen auf dem Gerät und in der Datei.</figcaption></figure></div>
+  </div>
+</details></div>
+</section>
+<section class="group" id="g-einstellungen" aria-labelledby="h-einstellungen">
+  <header class="g-head"><h2 id="h-einstellungen">Einstellungen und Hilfe</h2><p>Einheit, Schalter für Startseite und Editor, und ein FAQ für die versteckten Gesten.</p></header>
+  <div class="features">
+<details class="feature" id="einheit">
+  <summary><span class="sum-text"><span class="f-title">Kilogramm oder Pfund</span><span class="f-teaser">Eingabe und Anzeige in kg oder lb.</span></span><span class="f-count">3 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>„Weight Unit“ in den Einstellungen. Gespeichert wird immer in Kilogramm, die Einheit bestimmt nur Eingabe und Anzeige. Beim Wechsel erscheint die ganze Historie in der neuen Einheit: 80 kg werden 176.4 lb.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Die Auswahl der Einheit."><img src="img/gewichtseinheit.webp" width="603" height="1311" loading="lazy" alt="Die Auswahl der Einheit."></button><figcaption>Die Auswahl der Einheit.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Auf Pfund umgestellt, mit Erklärung."><img src="img/gewichtseinheit-lb.webp" width="603" height="1311" loading="lazy" alt="Auf Pfund umgestellt, mit Erklärung."></button><figcaption>Auf Pfund umgestellt, mit Erklärung.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="2" aria-label="Vergrößern: Dasselbe Workout in lb."><img src="img/detail-in-lb.webp" width="603" height="1311" loading="lazy" alt="Dasselbe Workout in lb."></button><figcaption>Dasselbe Workout in lb.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="schalter">
+  <summary><span class="sum-text"><span class="f-title">Einstellungen</span><span class="f-teaser">Alle Schalter auf einer Seite.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Das Zahnrad oben links öffnet die Einstellungen. Neben Übungsliste und Einheit gibt es dort die Schalter für den Aktivitätsgraphen (Graph, Wochentage, Legende) und für den Editor: „Collapse Other Exercises“, „Show Last Performance“, „Start with One Set“ und „Rate Effort“. Unter jedem Abschnitt steht, was er bewirkt.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Oben: Übungen, Einheit, Übersicht."><img src="img/settings-oben.webp" width="603" height="1311" loading="lazy" alt="Oben: Übungen, Einheit, Übersicht."></button><figcaption>Oben: Übungen, Einheit, Übersicht.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Unten: Workout-Editor und FAQ."><img src="img/settings-unten.webp" width="603" height="1311" loading="lazy" alt="Unten: Workout-Editor und FAQ."></button><figcaption>Unten: Workout-Editor und FAQ.</figcaption></figure></div>
+  </div>
+</details>
+<details class="feature" id="faq">
+  <summary><span class="sum-text"><span class="f-title">FAQ in der App</span><span class="f-teaser">Wo die Gesten und kleinen Symbole sind.</span></span><span class="f-count">2 Bilder</span><span class="chev" aria-hidden="true"></span></summary>
+  <div class="f-body">
+    <div class="f-text"><p>Settings → FAQ beantwortet die Fragen, auf die man beim Herumtippen nicht kommt: wie man ein Workout kopiert, wie man eine Übung löscht, was die Balken bedeuten und wie die einseitigen Modi funktionieren. Jede Antwort nennt den Knopf, den man sucht.</p></div>
+    <div class="gallery" role="list"><figure class="shot"><button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Die Fragen nach Themen."><img src="img/faq.webp" width="603" height="1311" loading="lazy" alt="Die Fragen nach Themen."></button><figcaption>Die Fragen nach Themen.</figcaption></figure><figure class="shot"><button type="button" class="zoom" data-index="1" aria-label="Vergrößern: Eine aufgeklappte Antwort."><img src="img/faq-aufgeklappt.webp" width="603" height="1311" loading="lazy" alt="Eine aufgeklappte Antwort."></button><figcaption>Eine aufgeklappte Antwort.</figcaption></figure></div>
+  </div>
+</details></div>
+</section>
+</main>
+
+<footer class="wrap">
+  <p>Die App ist auf Englisch, die Bilder zeigen die englische Oberfläche auf einem iPhone 17 im Simulator. Die Workouts sind Demo-Daten auf Grundlage von <code>store/demo-backup.json</code>, ergänzt um Supersätze, eigene Felder, Bewertungen und Notizen.</p>
+</footer>
+
+<dialog class="lb" id="lb" aria-label="Bild vergrößert">
+  <div class="lb-inner">
+    <div class="lb-stage">
+      <button class="lb-btn lb-prev" type="button" aria-label="Vorheriges Bild">‹</button>
+      <div class="lb-img"><img id="lb-img" alt=""></div>
+      <button class="lb-btn lb-next" type="button" aria-label="Nächstes Bild">›</button>
+    </div>
+    <div class="lb-bar"><span class="lb-cap" id="lb-cap"></span><span class="lb-pos" id="lb-pos"></span></div>
+  </div>
+  <button class="lb-btn lb-close" type="button" aria-label="Schließen">×</button>
+</dialog>
+
+<script>
+(() => {
+  const features = [...document.querySelectorAll('.feature')];
+  const groups = [...document.querySelectorAll('.group')];
+  const toggle = document.getElementById('toggle-all');
+
+  // Expand / collapse everything that is currently visible.
+  const syncToggle = () => {
+    const visible = features.filter(f => !f.hidden);
+    toggle.textContent = visible.length && visible.every(f => f.open) ? 'Alle zuklappen' : 'Alle aufklappen';
+  };
+  toggle.addEventListener('click', () => {
+    const visible = features.filter(f => !f.hidden);
+    const open = !visible.every(f => f.open);
+    visible.forEach(f => { f.open = open; });
+    syncToggle();
+  });
+  features.forEach(f => f.addEventListener('toggle', syncToggle));
+
+  // Search across title, teaser, text and captions.
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const haystack = new Map(features.map(f => [f, norm(f.textContent)]));
+  const q = document.getElementById('q');
+  q.addEventListener('input', () => {
+    const terms = norm(q.value).split(/\s+/).filter(Boolean);
+    let any = false;
+    features.forEach(f => {
+      const hit = terms.every(t => haystack.get(f).includes(t));
+      f.hidden = !hit;
+      any ||= hit;
+    });
+    groups.forEach(g => { g.hidden = !g.querySelector('.feature:not([hidden])'); });
+    document.getElementById('empty').classList.toggle('show', !any);
+    syncToggle();
+  });
+
+  // A link to #feature-id opens that feature.
+  const openFromHash = () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const el = id && document.getElementById(id);
+    if (el && el.classList.contains('feature')) { el.open = true; el.scrollIntoView({ block: 'start' }); }
+  };
+  window.addEventListener('hashchange', openFromHash);
+  openFromHash();
+
+  // Lightbox, stepping through the screens of one feature.
+  const lb = document.getElementById('lb');
+  const lbImg = document.getElementById('lb-img');
+  const lbCap = document.getElementById('lb-cap');
+  const lbPos = document.getElementById('lb-pos');
+  const prev = lb.querySelector('.lb-prev');
+  const next = lb.querySelector('.lb-next');
+  let shots = [], index = 0;
+  const show = i => {
+    index = i;
+    const fig = shots[i];
+    const img = fig.querySelector('img');
+    lbImg.src = img.src;
+    lbImg.alt = img.alt;
+    lbImg.classList.toggle('paper', fig.classList.contains('paper'));
+    lbCap.textContent = fig.querySelector('figcaption').textContent;
+    lbPos.textContent = shots.length > 1 ? `${i + 1} / ${shots.length}` : '';
+    prev.disabled = i === 0;
+    next.disabled = i === shots.length - 1;
+  };
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.zoom');
+    if (!btn) return;
+    shots = [...btn.closest('.gallery').querySelectorAll('figure')];
+    show(Number(btn.dataset.index));
+    lb.showModal();
+  });
+  prev.addEventListener('click', () => index > 0 && show(index - 1));
+  next.addEventListener('click', () => index < shots.length - 1 && show(index + 1));
+  lb.querySelector('.lb-close').addEventListener('click', () => lb.close());
+  lb.addEventListener('click', e => {
+    if (e.target === lb || e.target.classList.contains('lb-inner') || e.target.classList.contains('lb-img')) lb.close();
+  });
+  lb.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft' && index > 0) show(index - 1);
+    if (e.key === 'ArrowRight' && index < shots.length - 1) show(index + 1);
+  });
+  // Swipe between screens on touch devices.
+  let x0 = null;
+  lb.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 40) { if (dx < 0 && index < shots.length - 1) show(index + 1); if (dx > 0 && index > 0) show(index - 1); }
+    x0 = null;
+  });
+})();
+</script>

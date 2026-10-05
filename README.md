@@ -4,5 +4,6 @@
 einem eigenen, derzeit privaten Repository.
 
 - [datenschutz.html](datenschutz.html) — Datenschutzerklärung, verlinkt aus dem App Store
+- [features/](features/index.html) — Funktionsübersicht mit Bildern für Tester, nur vorübergehend, nicht für Suchmaschinen
 
 Ausgeliefert über GitHub Pages: https://dernanne.github.io/hippotrophy-web/datenschutz.html
