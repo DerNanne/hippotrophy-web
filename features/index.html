@@ -12,7 +12,9 @@
      beside a strip of phone screens, the way the app itself is a list of
      things that open. Colours are the app's: it sets no accent of its own,
      so iOS system blue, on the grouped greys of iOS. In light mode the blue
-     is a shade deeper than #007AFF, so small text on it stays readable. */
+     is a shade deeper than #007AFF, so small text on it stays readable. In
+     dark mode the ground is a neutral near-black, not iOS's pure black, and
+     the ink a step below white: white on black glares on most screens. */
   :root {
     --ground:      #F2F2F7;
     --surface:     #FFFFFF;
@@ -36,11 +38,11 @@
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --ground:      #000000;
+      --ground:      #121214;
       --surface:     #1C1C1E;
       --sunk:        #2C2C2E;
       --line:        #38383A;
-      --ink:         #F2F2F7;
+      --ink:         #E5E5EA;
       --ink-soft:    #AEAEB2;
       --ink-faint:   #8E8E93;
       --accent:      #0A84FF;
@@ -50,11 +52,11 @@
     }
   }
   :root[data-theme="dark"] {
-    --ground:      #000000;
+    --ground:      #121214;
     --surface:     #1C1C1E;
     --sunk:        #2C2C2E;
     --line:        #38383A;
-    --ink:         #F2F2F7;
+    --ink:         #E5E5EA;
     --ink-soft:    #AEAEB2;
     --ink-faint:   #8E8E93;
     --accent:      #0A84FF;
@@ -80,7 +82,25 @@
   @media (min-width: 40rem) { .wrap { padding-inline: 1.5rem; } }
 
   /* ---- Masthead ---- */
-  .masthead { padding-block: 2.5rem 1.5rem; display: grid; gap: .75rem; }
+  /* The app icon sits in the free space right of the text: beside the title on
+     phones, beside title, lede and meta from 40rem on. It adds no height. */
+  .masthead {
+    padding-block: 2.5rem 1.5rem; display: grid; gap: .75rem 1.5rem;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "top top" "title icon" "lede lede" "meta meta";
+  }
+  .mast-top { grid-area: top; }
+  .masthead h1 { grid-area: title; align-self: center; }
+  .masthead .lede { grid-area: lede; }
+  .masthead .meta { grid-area: meta; }
+  .app-icon {
+    grid-area: icon; align-self: center; width: 2.75rem; height: 2.75rem;
+    border-radius: 22.5%; box-shadow: 0 0 0 1px var(--line), 0 6px 18px rgb(0 0 0 / .12);
+  }
+  @media (min-width: 40rem) {
+    .masthead { grid-template-areas: "top top" "title icon" "lede icon" "meta icon"; }
+    .app-icon { width: 8.5rem; height: 8.5rem; }
+  }
   .eyebrow {
     font: 600 var(--step--1)/1 var(--display);
     letter-spacing: .12em; text-transform: uppercase; color: var(--accent);
@@ -136,6 +156,29 @@
   }
   .nav a span { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
   .nav a:hover { border-color: var(--accent); }
+  /* The chips scroll sideways, which a mouse wheel cannot do. A fade marks the
+     side with more chips; with a mouse, a button sits there too. Touch screens
+     swipe and keep only the fade. */
+  .nav-wrap { position: relative; min-width: 0; }
+  .nav-wrap.more-start .nav { -webkit-mask-image: linear-gradient(to right, transparent, #000 3rem); mask-image: linear-gradient(to right, transparent, #000 3rem); }
+  .nav-wrap.more-end .nav { -webkit-mask-image: linear-gradient(to left, transparent, #000 3rem); mask-image: linear-gradient(to left, transparent, #000 3rem); }
+  .nav-wrap.more-start.more-end .nav {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+  }
+  .nav-arrow {
+    display: none; position: absolute; top: 50%; translate: 0 -50%; z-index: 1;
+    width: 2rem; height: 2rem; padding: 0; border-radius: 50%; cursor: pointer;
+    place-items: center; background: var(--surface); border: 1px solid var(--line);
+    color: var(--ink); box-shadow: var(--shadow);
+  }
+  .nav-arrow svg { width: .9rem; height: .9rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-arrow:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-arrow.prev { left: -.25rem; }
+  .nav-arrow.next { right: -.25rem; }
+  @media (hover: hover) and (pointer: fine) {
+    .nav-wrap.more-start .nav-arrow.prev, .nav-wrap.more-end .nav-arrow.next { display: grid; }
+  }
   .tools { display: flex; gap: .5rem; align-items: center; }
   .search { flex: 1; min-width: 0; position: relative; }
   .search input {
@@ -183,13 +226,13 @@
   }
   .claims strong { display: block; font: 600 var(--step-1)/1.2 var(--display); letter-spacing: .01em; }
   .claims span { color: var(--ink-soft); }
-  /* The hippo and the biceps are Unicode emoji, drawn by the viewer's own
-     emoji font; the page ships no image of them. */
+  /* The hippo is the app icon's, cut out and traced (img/hippo.svg), so it
+     looks the same everywhere; emoji fonts outside Apple's drew it badly. */
   .legday {
     margin: 0; padding-top: 1rem; border-top: 1px solid var(--line);
     font: 600 var(--step-1)/1.25 var(--display); letter-spacing: .01em; color: var(--ink);
   }
-  .legday .hippo { font-size: 1.6em; line-height: 1; vertical-align: -.15em; margin-left: .35rem; white-space: nowrap; }
+  .legday .hippo { display: inline; height: 2.4em; width: auto; vertical-align: -.75em; margin-left: .4rem; }
   .intro[hidden] { display: none; }
 
   /* ---- Groups ---- */
@@ -311,6 +354,7 @@
     </fieldset>
   </div>
   <h1>HippoTrophy</h1>
+  <img class="app-icon" src="img/app-icon.webp" width="384" height="384" alt="">
   <p class="lede">Ein Trainingstagebuch für Hypertrophie- und Krafttraining. Hier steht jede Funktion der App mit Bildern, wie sie aussieht und wie man sie benutzt.</p>
   <ul class="meta">
     <li>Version <strong>0.8.0</strong> · Build <strong>18</strong></li>
@@ -321,7 +365,11 @@
 
 <div class="toolbar">
   <div class="wrap">
-    <nav class="nav" aria-label="Bereiche"><a href="#g-historie">Startseite und Historie<span>6</span></a><a href="#g-muskeln">Muskelgruppen und Heatmap<span>3</span></a><a href="#g-erfassen">Workout erfassen<span>15</span></a><a href="#g-bericht">PDF-Bericht<span>1</span></a><a href="#g-uebungen">Übungsliste<span>10</span></a><a href="#g-backup">Backup<span>3</span></a><a href="#g-einstellungen">Einstellungen und Hilfe<span>3</span></a></nav>
+    <div class="nav-wrap" id="nav-wrap">
+      <nav class="nav" aria-label="Bereiche"><a href="#g-historie">Startseite und Historie<span>6</span></a><a href="#g-muskeln">Muskelgruppen und Heatmap<span>3</span></a><a href="#g-erfassen">Workout erfassen<span>15</span></a><a href="#g-bericht">PDF-Bericht<span>1</span></a><a href="#g-uebungen">Übungsliste<span>10</span></a><a href="#g-backup">Backup<span>3</span></a><a href="#g-einstellungen">Einstellungen und Hilfe<span>3</span></a></nav>
+      <button class="nav-arrow prev" type="button" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M10 3L5 8l5 5"></path></svg></button>
+      <button class="nav-arrow next" type="button" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"></path></svg></button>
+    </div>
     <div class="tools">
       <label class="search">
         <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg>
@@ -352,7 +400,7 @@
           <div><strong>Open Source zur Veröffentlichung</strong>
           <span>Mit dem Erscheinen im App Store wird der Quellcode offengelegt.</span></div></li>
       </ul>
-      <p class="legday">And because a hippo never skips leg day.<span class="hippo" aria-hidden="true">🦛💪</span></p>
+      <p class="legday">And because a hippo never skips leg day.<img class="hippo" src="img/hippo.svg" alt="" width="842" height="962"></p>
     </div>
   </section>
   <p class="empty" id="empty">Keine Funktion passt zu dieser Suche.</p>
@@ -703,6 +751,25 @@
   const themeAuto = document.getElementById('theme-auto');
   themeAuto.checked = true;
   root.removeAttribute('data-theme');
+  // Chip row: mark which sides hide chips; the arrows page by most of a width.
+  // Links reached by Tab scroll themselves into view, so the arrows stay out
+  // of the tab order.
+  const navWrap = document.getElementById('nav-wrap');
+  const nav = navWrap.querySelector('.nav');
+  const syncNav = () => {
+    navWrap.classList.toggle('more-start', nav.scrollLeft > 1);
+    navWrap.classList.toggle('more-end', nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 1);
+  };
+  nav.addEventListener('scroll', syncNav, { passive: true });
+  window.addEventListener('resize', syncNav);
+  syncNav();
+  const page = dir => nav.scrollBy({
+    left: dir * nav.clientWidth * .8,
+    behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+  });
+  navWrap.querySelector('.prev').addEventListener('click', () => page(-1));
+  navWrap.querySelector('.next').addEventListener('click', () => page(1));
+
   document.getElementById('theme').addEventListener('change', e => {
     if (e.target.value === 'auto') root.removeAttribute('data-theme');
     else root.setAttribute('data-theme', e.target.value);
