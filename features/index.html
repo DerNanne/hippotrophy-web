@@ -150,6 +150,46 @@
   }
   .btn:hover { border-color: var(--accent); color: var(--accent); }
 
+  /* ---- Intro: the start screen beside what the app promises ----
+     Wide: phone left, text right. Narrow: text first, the phone below it,
+     right before the group that describes that same screen. */
+  .intro {
+    display: grid; gap: 1.75rem; align-items: center;
+    padding-top: 2.25rem;
+  }
+  .intro-shot { order: 2; justify-self: center; width: min(15rem, 70%); margin: 0; }
+  .intro-shot .zoom { width: 100%; }
+  .intro-shot img {
+    width: 100%; border-radius: 30px;
+    border: 1px solid var(--line); background: var(--sunk); box-shadow: var(--shadow);
+  }
+  .intro-text { display: grid; gap: 1.25rem; }
+  @media (min-width: 44rem) {
+    .intro { grid-template-columns: 15rem 1fr; gap: 3rem; }
+    .intro-shot { order: 0; width: 100%; }
+  }
+  .slogan {
+    margin: 0; font: 700 var(--step-2)/1.05 var(--display);
+    text-transform: uppercase; letter-spacing: .02em; text-wrap: balance;
+  }
+  .claims { margin: 0; padding: 0; list-style: none; display: grid; gap: .9rem; }
+  .claims li { display: grid; grid-template-columns: 1.6rem 1fr; gap: .75rem; align-items: start; }
+  .claims svg {
+    width: 1.6rem; height: 1.6rem; padding: .3rem; border-radius: 50%;
+    background: var(--accent-wash); stroke: var(--accent); fill: none;
+    stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .claims strong { display: block; font: 600 var(--step-1)/1.2 var(--display); letter-spacing: .01em; }
+  .claims span { color: var(--ink-soft); }
+  /* The hippo and the biceps are Unicode emoji, drawn by the viewer's own
+     emoji font; the page ships no image of them. */
+  .legday {
+    margin: 0; padding-top: 1rem; border-top: 1px solid var(--line);
+    font: 600 var(--step-1)/1.25 var(--display); letter-spacing: .01em; color: var(--ink);
+  }
+  .legday .hippo { font-size: 1.6em; line-height: 1; vertical-align: -.15em; margin-left: .35rem; white-space: nowrap; }
+  .intro[hidden] { display: none; }
+
   /* ---- Groups ---- */
   main { padding-block: 1rem 4rem; }
   .group { padding-top: 2.25rem; }
@@ -269,7 +309,7 @@
     </fieldset>
   </div>
   <h1>HippoTrophy</h1>
-  <p class="lede">Ein Trainingstagebuch für Hypertrophie- und Krafttraining. Alles bleibt auf dem Gerät: kein Konto, keine Anmeldung, kein Netzzugriff. Hier steht jede Funktion der App mit Bildern, wie sie aussieht und wie man sie benutzt.</p>
+  <p class="lede">Ein Trainingstagebuch für Hypertrophie- und Krafttraining. Hier steht jede Funktion der App mit Bildern, wie sie aussieht und wie man sie benutzt.</p>
   <ul class="meta">
     <li>Version <strong>0.8.0</strong> · Build <strong>18</strong></li>
     <li>Stand <strong>5. Oktober 2026</strong> (feature-078)</li>
@@ -291,6 +331,28 @@
 </div>
 
 <main class="wrap">
+  <section class="intro" id="intro" aria-labelledby="h-intro">
+    <figure class="intro-shot">
+      <button type="button" class="zoom" data-index="0" aria-label="Vergrößern: Der Startbildschirm">
+        <img src="img/start-mit-heute.webp" width="603" height="1311" alt="Der Startbildschirm der App: Wochenzähler, Aktivitätsgraph und die Liste der Workouts."></button>
+    </figure>
+    <div class="intro-text">
+      <span class="eyebrow">Warum HippoTrophy?</span>
+      <h2 class="slogan" id="h-intro">Stay in control of your gains and your data.</h2>
+      <ul class="claims">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          <div><strong>Deine Daten bleiben auf deinem Gerät</strong>
+          <span>Kein Konto, keine Anmeldung, kein Netzzugriff. Was du einträgst, verlässt das iPhone nur, wenn du selbst ein Backup exportierst.</span></div></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          <div><strong>Kostenlos und ohne Werbung</strong>
+          <span>Kein Abo, keine Käufe in der App, keine Werbung.</span></div></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          <div><strong>Open Source zur Veröffentlichung</strong>
+          <span>Mit dem Erscheinen im App Store wird der Quellcode offengelegt.</span></div></li>
+      </ul>
+      <p class="legday">And because a hippo never skips leg day.<span class="hippo" aria-hidden="true">🦛💪</span></p>
+    </div>
+  </section>
   <p class="empty" id="empty">Keine Funktion passt zu dieser Suche.</p>
   
 <section class="group" id="g-historie" aria-labelledby="h-historie">
@@ -670,6 +732,7 @@
       any ||= hit;
     });
     groups.forEach(g => { g.hidden = !g.querySelector('.feature:not([hidden])'); });
+    document.getElementById('intro').hidden = terms.length > 0;
     document.getElementById('empty').classList.toggle('show', !any);
     syncToggle();
   });
@@ -698,7 +761,7 @@
     lbImg.src = img.src;
     lbImg.alt = img.alt;
     lbImg.classList.toggle('paper', fig.classList.contains('paper'));
-    lbCap.textContent = fig.querySelector('figcaption').textContent;
+    lbCap.textContent = fig.querySelector('figcaption')?.textContent ?? '';
     lbPos.textContent = shots.length > 1 ? `${i + 1} / ${shots.length}` : '';
     prev.disabled = i === 0;
     next.disabled = i === shots.length - 1;
@@ -706,7 +769,7 @@
   document.addEventListener('click', e => {
     const btn = e.target.closest('.zoom');
     if (!btn) return;
-    shots = [...btn.closest('.gallery').querySelectorAll('figure')];
+    shots = [...btn.closest('.gallery, .intro').querySelectorAll('figure')];
     show(Number(btn.dataset.index));
     lb.showModal();
   });
